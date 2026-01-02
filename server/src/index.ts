@@ -30,6 +30,11 @@ app.get('/', (req, res) => {
   res.send('Hello from the server!');
 });
 
+app.get("/device", async(req,res)=>{
+   const {user_code} = req.query;
+   res.redirect(`http://localhost:3000/device?user_code=${user_code}`);
+})
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
