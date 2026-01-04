@@ -6,6 +6,7 @@ import { Command } from "commander";
 import { login } from "./commands/auth/login.js";
 import { logout } from "./commands/auth/logOut.js";
 import { whoami } from "./commands/auth/whoAmI.js";
+import { wakeUp } from "./commands/ai/wakeUp.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -32,6 +33,7 @@ async function main(){
      .addCommand(login)
      .addCommand(logout)
      .addCommand(whoami)
+     .addCommand(wakeUp);
 
      program.action(()=>{
         program.help();
