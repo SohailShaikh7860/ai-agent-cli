@@ -16,6 +16,8 @@ import dotenv from "dotenv";
 import prisma from "../../../lib/Ds.js"
 import { getStoredToken, isTokenExpired, storeToken } from "../../../lib/token.js";
 
+// Load environment variables
+dotenv.config();
 
 const URL = "http://localhost:3005"
 const CLIENT_ID = process.env.GITHUB_CLIENT_ID;

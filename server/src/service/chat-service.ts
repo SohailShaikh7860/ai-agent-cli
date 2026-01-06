@@ -26,7 +26,7 @@ export class chatService {
      * @param {string} mode - Optional mode to filter.
      */
 
-    async getOrCreateConversation(userId:any, conversationId = null, mode = "chat") {
+    async getOrCreateConversation(userId:any, conversationId:any = null, mode = "chat") {
           if(conversationId){
               const conversation = await prisma.conversation.findFirst({
                 where:{
