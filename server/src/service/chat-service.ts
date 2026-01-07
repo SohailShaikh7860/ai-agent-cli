@@ -45,7 +45,12 @@ export class chatService {
               if(conversation) return conversation;
           }  
 
-          return await this.createConversation(userId, mode);
+          const newConversation = await this.createConversation(userId, mode);
+          
+          return {
+              ...newConversation,
+              messages: []
+          };
     }
 
     /**
