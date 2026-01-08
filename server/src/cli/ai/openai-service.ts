@@ -1,22 +1,39 @@
 import OpenAI from "openai";
 import { generateObject, streamText } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { createOpenAI } from "@ai-sdk/openai";
 import { openaiConfig } from "../../config/openai.config.js";
 import chalk from "chalk";
 
 export class AIService {
   private client: OpenAI;
   private model = openaiConfig.model;
+  private openaiProvider: ReturnType<typeof createOpenAI>;
 
   constructor() {
-    if (!openaiConfig.apiKey) {
+    // Debug: Check if API key is loaded
+    const apiKey = openaiConfig.apiKey || process.env.OPENAI_API_KEY;
+    
+    if (!apiKey || apiKey.trim() === '') {
+      console.error(chalk.red('DEBUG: OPENAI_API_KEY is empty or not set'));
+      console.error(chalk.yellow('Make sure you have a .env file in the server directory with:'));
+      console.error(chalk.yellow('OPENAI_API_KEY=sk-your-key-here'));
       throw new Error(
         "OpenAI API key is not configured. Please set the OPENAI_API_KEY environment variable."
       );
     }
 
+    // Use the API key from config or fallback to env
+    const finalApiKey = openaiConfig.apiKey || apiKey;
+
     this.client = new OpenAI({
-      apiKey: openaiConfig.apiKey,
+      apiKey: finalApiKey,
+    });
+
+    // Create OpenAI provider with API key for AI SDK
+    // Explicitly set baseURL to avoid AI Gateway fallback
+    this.openaiProvider = createOpenAI({
+      apiKey: finalApiKey,
+      baseURL: 'https://api.openai.com/v1',
     });
   }
 
@@ -38,7 +55,7 @@ export class AIService {
   ) {
     try {
       const streamConfig: any = {
-        model: openai(this.model),
+        model: this.openaiProvider(this.model),
         messages: messages,
       };
 
@@ -117,6 +134,14 @@ export class AIService {
     return result.content;
   }
   /**
+   * Get the configured model instance for use with AI SDK functions
+   * @returns {LanguageModelV3} The configured OpenAI model instance
+   */
+  getModel() {
+    return this.openaiProvider(this.model);
+  }
+
+  /**
    * Genreate application files based on AI response using zod schema.
    * @param {Object} schema
    * @param {string} prompt
@@ -126,7 +151,7 @@ export class AIService {
   async generateStructured(schema: any, prompt: string) {
     try {
       const result = await generateObject({
-        model: openai(this.model),
+        model: this.openaiProvider(this.model),
         schema: schema,
         prompt: prompt,
       });

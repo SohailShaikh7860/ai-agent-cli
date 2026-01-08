@@ -8,8 +8,23 @@ import prisma from "../../lib/Ds.js";
 import { generateApplication } from "../../config/agent.config.js";
 import yoctoSpinner from "yocto-spinner";
 
-const aiService = new AIService();
-const chatSvc = new chatService();
+// Lazy initialization to ensure dotenv is loaded first
+let aiService: AIService | null = null;
+let chatSvc: chatService | null = null;
+
+function getAIService() {
+  if (!aiService) {
+    aiService = new AIService();
+  }
+  return aiService;
+}
+
+function getChatService() {
+  if (!chatSvc) {
+    chatSvc = new chatService();
+  }
+  return chatSvc;
+}
 
 async function getUserFromToken() {
   const token = await getStoredToken();
@@ -35,7 +50,7 @@ async function getUserFromToken() {
 }
 
 async function initConversation(userId:any, conversationId: string | null = null) {
-  const conversation = await chatSvc.getOrCreateConversation(
+  const conversation = await getChatService().getOrCreateConversation(
     userId,
     conversationId,
     "agent"
@@ -62,7 +77,7 @@ async function initConversation(userId:any, conversationId: string | null = null
 }
 
 async function saveMessage(conversationId:string, role:any, content:any){
-     return await chatSvc.addMessage(conversationId, role, content);
+     return await getChatService().addMessage(conversationId, role, content);
 }
 
 export async function startAgentChat(conversationId: string | null = null) {
@@ -167,7 +182,7 @@ async function agentLoop(conversation:any) {
     await saveMessage(conversation.id, "user", userInput);
 
     try {
-        const result = await generateApplication(userInput, aiService, process.cwd());
+        const result = await generateApplication(userInput, getAIService(), process.cwd());
 
         if(result && result.success){
              // Save successful generation details

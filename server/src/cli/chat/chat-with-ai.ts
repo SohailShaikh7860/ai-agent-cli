@@ -48,8 +48,23 @@ marked.use(markedTerminal({
   href: chalk.blue.underline,
 }));
 
-const aiService = new AIService();
-const chatSvc = new chatService();
+// Lazy initialization to ensure dotenv is loaded first
+let aiService: AIService | null = null;
+let chatSvc: chatService | null = null;
+
+function getAIService() {
+  if (!aiService) {
+    aiService = new AIService();
+  }
+  return aiService;
+}
+
+function getChatService() {
+  if (!chatSvc) {
+    chatSvc = new chatService();
+  }
+  return chatSvc;
+}
 
 async function getUserFromToken() {
     const token = await getStoredToken();
@@ -77,7 +92,7 @@ async function getUserFromToken() {
 async function initConversation(userId:string, conversationId:string | null, mode:string = "chat") {
      const spinner = yoctoSpinner({text: "Loading conversation..."}).start();
 
-     const conversation = await chatSvc.getOrCreateConversation(userId, conversationId, mode);
+     const conversation = await getChatService().getOrCreateConversation(userId, conversationId, mode);
 
      spinner.success("Conversation Loaded.");
      
@@ -126,7 +141,7 @@ async function displayMessages(messages:any[]){
 }
 
 async function saveMessage(conversationId:string, role:any, content:any){
-     return await chatSvc.addMessage(conversationId, role, content);
+     return await getChatService().addMessage(conversationId, role, content);
 }
 
 async function getAiResponse(conversationId:string){
@@ -135,15 +150,15 @@ async function getAiResponse(conversationId:string){
         color: 'cyan'
      }).start();
 
-     const dbMessages = await chatSvc.getMessages(conversationId);
-     const aiMessages = chatSvc.formatMessages(dbMessages);
+     const dbMessages = await getChatService().getMessages(conversationId);
+     const aiMessages = getChatService().formatMessages(dbMessages);
 
      let fullResponse = "";
 
      let isFirstChunk = true;
 
      try {
-        const result = await aiService.sendMessage(aiMessages, (chunk:any)=>{
+        const result = await getAIService().sendMessage(aiMessages, (chunk:any)=>{
            // Stop spinner on first chunk and show header
       if (isFirstChunk) {
         spinner.stop();
@@ -172,7 +187,7 @@ async function getAiResponse(conversationId:string){
 async function updateConversationTitle(conversationId:string, userInput:any, messageCount:number){
      if(messageCount === 1){
         const title = userInput.slice(0,50) + (userInput.length > 50 ? "...": "")
-        await chatSvc.updateTitle(conversationId, title);
+        await getChatService().updateTitle(conversationId, title);
      }
 }
 
@@ -226,7 +241,7 @@ async function chatLoop(conversation:any){
 
       await saveMessage(conversation.id, 'user', userInput);
 
-      const messages = await chatSvc.getMessages(conversation.id);
+      const messages = await getChatService().getMessages(conversation.id);
 
       const aiRespone = await getAiResponse(conversation.id);
 

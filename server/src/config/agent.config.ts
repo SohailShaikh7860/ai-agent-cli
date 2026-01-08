@@ -24,8 +24,7 @@ const ApplicationSchema = z.object({
   ),
   dependencies: z
     .array(z.string())
-    .optional()
-    .describe("NPM dependencies with versions (e.g. react@18.2.0)"),
+    .describe("NPM dependencies with versions (e.g. react@18.2.0). Return empty array [] if no dependencies are needed."),
 });
 
 function printSystem(message: string) {
@@ -95,7 +94,7 @@ export async function generateApplication(
     printSystem(chalk.magenta("🤖 Agent Response:\n"));
 
     const { object: application } = await generateObject({
-      model: aiService.model,
+      model: aiService.getModel(),
       schema: ApplicationSchema,
       prompt: `Create a complete, production-ready application for: ${description}
 
@@ -115,6 +114,7 @@ Provide:
 - A meaningful kebab-case folder name
 - All necessary files with complete content
 - Setup commands (for example: cd folder, npm install, npm run dev OR just open index.html)
+- Dependencies array: ALWAYS include this field. Use [] (empty array) if no npm dependencies are needed, otherwise list all dependencies with versions
 - Make it visually appealing and functional`,
     });
 
