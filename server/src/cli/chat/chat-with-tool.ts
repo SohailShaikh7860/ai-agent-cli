@@ -266,6 +266,8 @@ async function getAiResponse(conversationId:string){
 
      let isFirstChunk = true;
 
+     const tools = getEnabledTools();
+
      try {
         const result = await aiService.sendMessage(aiMessages, (chunk:any)=>{
            // Stop spinner on first chunk and show header
@@ -278,7 +280,7 @@ async function getAiResponse(conversationId:string){
         isFirstChunk = false;
       }
       fullResponse += chunk;
-        });
+        }, tools);
 
         console.log("\n");
         const renderedMarkdown = marked.parse(fullResponse);
