@@ -175,7 +175,7 @@ By default, the client expects the server to run on `http://localhost:3005`. Adj
 ## Screenshots
 
 ### CLI Demo Video
-https://github.com/user-attachments/assets/c423d1d5-a500-44d5-a658-1c1c17b8706c
+https://youtu.be/TD_sWbtU1lE
 
 ### CLI Login
 ![CLI Login](github/screenshot/cli-login.png)
